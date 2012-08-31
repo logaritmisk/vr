@@ -14,11 +14,12 @@ function find_reverse {
   done
 }
 
+
 pwd=$(pwd -P)
 folder=$(find_reverse $pwd '.vagrant')
 
 if [ $folder ]; then
-  test `find "${folder}.vr_config" -cmin +10` 2>&1 /dev/null && rm "${folder}.vr_config"
+  test $(find "${folder}.vr_config" -cmin +10 2>&1) && rm "${folder}.vr_config"
 
   if [ ! -f "${folder}.vr_config" ]; then
     pushd $folder > /dev/null && vagrant ssh-config > .vr_config && popd > /dev/null
