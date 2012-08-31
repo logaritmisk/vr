@@ -14,19 +14,15 @@ function find_reverse {
   done
 }
 
-
-folder=$(find_reverse $(pwd -P) '.vagrant')
+pwd=$(pwd -P)
+folder=$(find_reverse $pwd '.vagrant')
 
 if [ $folder ]; then
-  test `find "${folder}.ssh_config" -cmin +10` > /dev/null && rm "${folder}.ssh_config"
+  test `find "${folder}.vr_config" -cmin +10` 2>&1 /dev/null && rm "${folder}.vr_config"
 
-  if [ ! -f "${folder}.ssh_config" ]; then
-    pushd $folder > /dev/null && vagrant ssh-config > .ssh_config && popd > /dev/null
-  fi
+  if [ ! -f "${folder}.vr_config" ]; then
+    pushd $folder > /dev/null && vagrant ssh-config > .vr_config && popd > /dev/null
 
-  test `find "${folder}.r" -cmin +10` > /dev/null && rm "${folder}.r"
-
-  if [ ! -f "${folder}.r" ]; then
     while read f; do
       a=$(echo $f | cut -d ' ' -f 1 | cut -d ':' -f 2)
 
@@ -35,17 +31,17 @@ if [ $folder ]; then
       if [ $? -eq 0 ]; then
         b=$(echo $f | cut -d ' ' -f 3)
 
-        echo "${b} ${a}" > "${folder}.r"
+        echo "# ${b} ${a}" >> "${folder}.vr_config"
       fi
-    done < <(ssh -qtF "${folder}.ssh_config" default "mount" | tr -d '\r')
+    done < <(ssh -qtF "${folder}.vr_config" default "mount" | tr -d '\r')
   fi
 
   if [ -n "$1" ]; then
-    s=( $(cat "${folder}.r") )
-    p=${s[0]}${pwd#${s[1]}*}
+    s=( $(tail -n1 "${folder}.vr_config") )
+    p=${s[1]}${pwd#${s[2]}*}
 
     cmd="cd ${p} && $@"
   fi
 
-  ssh -qtF "${folder}.ssh_config" default ${cmd:-""}
+  ssh -qtF "${folder}.vr_config" default ${cmd:-""}
 fi
