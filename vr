@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 function find_reverse {
   pwd=$1/
   while [ "$pwd" != "//" ]; do
@@ -13,9 +14,8 @@ function find_reverse {
   done
 }
 
-pwd=$(pwd)
 
-folder=$(find_reverse $pwd '.vagrant')
+folder=$(find_reverse $(pwd -P) '.vagrant')
 
 if [ $folder ]; then
   test `find "${folder}.ssh_config" -cmin +10` > /dev/null && rm "${folder}.ssh_config"
